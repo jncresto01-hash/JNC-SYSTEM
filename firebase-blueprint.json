@@ -1,0 +1,174 @@
+{
+  "entities": {
+    "Survey": {
+      "title": "Survey",
+      "description": "Definition of a customer survey",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "indicators": {
+          "type": "array",
+          "description": "List of questions/indicators in the survey"
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "active": { "type": "boolean" },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["title", "indicators", "createdAt", "active"]
+    },
+    "Response": {
+      "title": "Response",
+      "description": "A customer's response to a survey",
+      "type": "object",
+      "properties": {
+        "surveyId": { "type": "string" },
+        "answers": { "type": "object" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "suggestions": { "type": "string" },
+        "submittedAt": { "type": "string", "format": "date-time" },
+        "customerVisitDate": { "type": "string" },
+        "metadata": { "type": "object" }
+      },
+      "required": ["surveyId", "answers", "submittedAt"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Trusted administrative users",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin"] },
+        "pin": { "type": ["string", "null"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "role"]
+    },
+    "Member": {
+      "title": "Member",
+      "description": "Registered Loyal Members",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "address": { "type": "string" },
+        "birthday": { "type": "string" },
+        "memberId": { "type": "string" },
+        "memberType": { "type": "string", "enum": ["Umum", "Corporate"] },
+        "companyName": { "type": "string" },
+        "registeredAt": { "type": "string", "format": "date-time" },
+        "expiresAt": { "type": "string", "format": "date-time" },
+        "lastBirthdayGreetedYear": { "type": "number", "description": "Last year this member received a birthday greeting to reset real-time notification badge" }
+      },
+      "required": ["name", "phone", "email", "memberId", "memberType"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "General customer profile tracking",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "lastSeen": { "type": "string", "format": "date-time" },
+        "totalSurveys": { "type": "number" },
+        "isMember": { "type": "boolean" }
+      },
+      "required": ["name", "phone", "lastSeen"]
+    },
+    "LoyaltySettings": {
+      "title": "Loyalty Settings",
+      "description": "Configuration for loyalty program.",
+      "type": "object",
+      "properties": {
+        "durationDays": { "type": "number" },
+        "birthdayTemplate": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "ActivityLog": {
+      "title": "Activity Log",
+      "description": "Records of actions like survey submissions, birthday greetings, and admin operations",
+      "type": "object",
+      "properties": {
+        "memberPhone": { "type": "string" },
+        "adminEmail": { "type": "string" },
+        "type": { "type": "string", "enum": ["SURVEY_SUBMISSION", "BIRTHDAY_GREETING", "REGISTRATION", "ADMIN_ACTION"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "details": { "type": "string" },
+        "action": { "type": "string" },
+        "surveyId": { "type": "string" }
+      },
+      "required": ["type", "timestamp", "details"]
+    },
+    "Promotion": {
+      "title": "Promotion",
+      "description": "Promotional offers for loyal members",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "originalPrice": { "type": "number" },
+        "discountedPrice": { "type": "number" },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "description", "active"]
+    }
+  },
+  "firestore": {
+    "surveys": {
+      "schema": "Survey",
+      "description": "Collection of survey templates"
+    },
+    "responses": {
+      "schema": "Response",
+      "description": "Collection of flattened survey responses"
+    },
+    "activityLogs": {
+      "schema": "ActivityLog",
+      "description": "Historical log of member activities"
+    },
+    "admins": {
+      "schema": "Admin",
+      "description": "Registry of administrative accounts"
+    },
+    "members": {
+      "schema": "Member",
+      "description": "Collection of loyalty members"
+    },
+    "employeeFOC": {
+      "title": "Employee FOC",
+      "description": "Records for employees with Free of Charge privileges",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "companyName": { "type": "string" },
+        "position": { "type": "string" },
+        "discountValue": { "type": "number" },
+        "approvedBy": { "type": "string" },
+        "validUntil": { "type": "string", "format": "date-time" },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "phone", "approvedBy"]
+    },
+    "promotions": {
+      "schema": "Promotion",
+      "description": "Collection of promotional offers"
+    },
+    "customers": {
+      "schema": "Customer",
+      "description": "Unified customer registry"
+    },
+    "settings/loyalty": {
+      "schema": "LoyaltySettings",
+      "description": "Global loyalty program settings."
+    }
+  }
+}

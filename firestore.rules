@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email.lower() == 'jncresto01@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.token.email)) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Surveys
+    match /surveys/{surveyId} {
+      allow get: if true; // Surveys need to be readable for public participants
+      allow list, create, update, delete: if isAdmin();
+    }
+
+    // Responses
+    match /responses/{responseId} {
+      allow create: if true; // Public submission
+      allow list, get, delete: if isAdmin();
+      allow update: if false; 
+    }
+
+    // Admins
+    match /admins/{adminId} {
+      allow get: if isSignedIn();
+      allow list, create, update, delete: if isAdmin();
+    }
+
+    // Loyalty Members
+    match /members/{memberId} {
+      allow create, get, list: if true; // Public signup and lookup
+      allow delete, update: if isAdmin();
+    }
+
+    // Customers
+    match /customers/{customerPhone} {
+      allow get, create, update: if true; // Required for public survey identification & registration
+      allow list, delete: if isAdmin();
+    }
+
+    // Settings
+    match /settings/{settingId} {
+      allow get: if true; // Public needs to read loyalty duration
+      allow list, write: if isAdmin();
+    }
+
+    // Activity Logs
+    match /activityLogs/{logId} {
+      allow create: if true; // Members and admins can create
+      allow read, delete: if isAdmin();
+      allow update: if false;
+    }
+
+    // Promotions
+    // Employee FOC
+    match /employeeFOC/{id} {
+      allow list, get: if true;
+      allow write: if isAdmin();
+    }
+
+    match /promotions/{promoId} {
+      allow read: if true; // Public can see active promos
+      allow write: if isAdmin();
+    }
+  }
+}
